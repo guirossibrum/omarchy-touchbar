@@ -1,0 +1,44 @@
+# Maintainer: Guilherme Rossi Brum
+pkgname=omarchy-touchbar
+pkgver=0.3.8.omarchy1
+pkgrel=1
+pkgdesc='Omarchy Touch Bar daemon: branching logo animation, tap/hold actions and desktop font sync'
+arch=('aarch64' 'x86_64')
+url='https://github.com/guirossibrum/omarchy-touchbar'
+license=('MIT' 'Apache-2.0')
+depends=('cairo' 'fontconfig' 'freetype2' 'gcc-libs' 'glib2' 'glibc' 'libinput' 'librsvg' 'systemd-libs')
+makedepends=('git' 'pkgconf' 'rust')
+provides=('tiny-dfr=0.3.8')
+conflicts=('tiny-dfr')
+install=omarchy-touchbar.install
+_commit=6b77e96f8cef5ddf5c6c5c5b4a003b477f342ec9
+source=("tiny-dfr::git+https://github.com/guirossibrum/tiny-dfr.git#commit=$_commit"
+        'setup-font-channel')
+sha256sums=('SKIP' 'bd51ef3a04a635a1671179601d7f546fb5f87bf99e9f213d9770b82b33e9d8f9')
+
+prepare() {
+  cd tiny-dfr
+  cargo fetch --locked
+}
+
+build() {
+  cd tiny-dfr
+  cargo build --release --frozen --jobs 2 --bin tiny-dfr
+}
+
+check() {
+  cd tiny-dfr
+  cargo test --frozen --jobs 2
+  [[ $(target/release/tiny-dfr --capabilities) == 'trace-animation ttfx-wipe' ]]
+}
+
+package() {
+  cd tiny-dfr
+  install -D -m 755 target/release/tiny-dfr "$pkgdir/usr/bin/omarchy-touchbar"
+  ln -s omarchy-touchbar "$pkgdir/usr/bin/tiny-dfr"
+  install -D -m 644 etc/systemd/system/tiny-dfr.service "$pkgdir/usr/lib/systemd/system/tiny-dfr.service"
+  install -D -m 644 etc/udev/rules.d/*.rules -t "$pkgdir/usr/lib/udev/rules.d/"
+  install -D -m 644 share/tiny-dfr/* -t "$pkgdir/usr/share/tiny-dfr/"
+  install -D -m 644 LICENSE LICENSE.material -t "$pkgdir/usr/share/licenses/$pkgname/"
+  install -D -m 755 "$srcdir/setup-font-channel" "$pkgdir/usr/lib/omarchy-touchbar/setup-font-channel"
+}

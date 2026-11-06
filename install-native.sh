@@ -1,63 +1,49 @@
 #!/bin/bash
-# Build the matching native renderer as the user; install only finished artifacts.
+# Compatibility entry point: build/install the managed omarchy-touchbar package.
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-source "$ROOT/native/source.env"
 
 run_as_root() {
-  if (( EUID == 0 )); then "$@"
-  elif [[ -t 0 && -t 1 ]]; then /usr/bin/sudo "$@"
-  else /usr/bin/pkexec "$@"
+  if (( EUID == 0 )); then
+    "$@"
+  elif [[ -t 0 && -t 1 ]]; then
+    /usr/bin/sudo "$@"
+  else
+    /usr/bin/pkexec "$@"
   fi
 }
 
 if [[ ${1:-} == --uninstall ]]; then
-  run_as_root /usr/bin/bash -c '
-    rm -f /etc/systemd/system/tiny-dfr.service.d/90-omarchy-animation.conf
-    systemctl daemon-reload
-    systemctl restart tiny-dfr.service
-    rm -f /usr/local/libexec/tiny-dfr-omarchy
-  '
-  echo 'Restored the packaged tiny-dfr daemon. Trace buttons use their static icons.'
+  /usr/bin/pacman -Si tiny-dfr >/dev/null
+  run_as_root /usr/bin/pacman -S --noconfirm --ask 4 tiny-dfr
+  rm -f "$HOME/.config/omarchy/hooks/font-set.d/90-touchbar-font" "$HOME/.config/omarchy/hooks/post-boot.d/90-touchbar-font"
+  echo 'Restored stock tiny-dfr. The plugin uses its static icon fallback.'
   exit 0
 fi
-[[ $# == 0 ]] || { echo 'Usage: install-native.sh [--uninstall]' >&2; exit 1; }
-(( EUID != 0 )) || { echo 'Build as your normal user; the installer elevates only to copy finished files.' >&2; exit 1; }
-for tool in cargo git pkg-config; do
-  command -v "$tool" >/dev/null || {
-    echo 'Missing build tools. On Omarchy: omarchy pkg add rust gcc pkgconf cairo pango librsvg libinput systemd-libs' >&2
-    exit 1
-  }
-done
+if (( $# != 0 || EUID == 0 )); then
+  echo 'Usage as your normal user: install-native.sh [--uninstall]' >&2
+  exit 1
+fi
 
-BUILD="${XDG_CACHE_HOME:-$HOME/.cache}/omarchy-touchbar/native"
-mkdir -p "$BUILD"
-if [[ ! -d $BUILD/.git ]]; then /usr/bin/git -C "$BUILD" init -q; fi
-/usr/bin/git -C "$BUILD" fetch --depth 1 "$NATIVE_REPOSITORY" "$NATIVE_REVISION"
-/usr/bin/git -C "$BUILD" checkout --detach --force FETCH_HEAD
-[[ $(/usr/bin/git -C "$BUILD" rev-parse HEAD) == "$NATIVE_REVISION" ]] || exit 1
-/usr/bin/cargo test --locked --manifest-path "$BUILD/Cargo.toml"
-/usr/bin/cargo build --locked --release -j 2 --manifest-path "$BUILD/Cargo.toml" --bin tiny-dfr
-binary="$BUILD/target/release/tiny-dfr"
-[[ $("$binary" --capabilities) == 'trace-animation ttfx-wipe' ]] || exit 1
-"$binary" --check-config
-
-run_as_root /usr/bin/bash -c '
-  set -eu
-  install -D -m 755 "$1" /usr/local/libexec/tiny-dfr-omarchy
-  install -D -m 644 "$2" /etc/systemd/system/tiny-dfr.service.d/90-omarchy-animation.conf
-  systemctl daemon-reload
-  systemctl restart tiny-dfr.service
-  sleep 1
-  invocation=$(systemctl show tiny-dfr.service -p InvocationID --value)
-  if ! systemctl is-active --quiet tiny-dfr.service ||
-     journalctl --no-pager "_SYSTEMD_INVOCATION_ID=$invocation" | grep -q "panicked at"; then
-    echo "Native renderer failed startup; restoring packaged tiny-dfr" >&2
-    rm -f /etc/systemd/system/tiny-dfr.service.d/90-omarchy-animation.conf
-    systemctl daemon-reload
-    systemctl restart tiny-dfr.service
-    exit 1
+# Keep makepkg clones/symlinks/artifacts outside the user plugin directory.
+BUILD_WORK="${XDG_CACHE_HOME:-$HOME/.cache}/omarchy-touchbar/package-build"
+mkdir -p "$BUILD_WORK"
+cp "$ROOT/packaging/omarchy-touchbar/PKGBUILD" "$ROOT/packaging/omarchy-touchbar/setup-font-channel" "$ROOT/packaging/omarchy-touchbar/omarchy-touchbar.install" "$BUILD_WORK/"
+cd "$BUILD_WORK"
+/usr/bin/makepkg --force --log
+mapfile -t artifacts < <(/usr/bin/makepkg --packagelist)
+package=""
+for artifact in "${artifacts[@]}"; do
+  if [[ ${artifact##*/} == omarchy-touchbar-[0-9]*.pkg.tar.* ]]; then
+    package=$artifact
   fi
-  rm -f /etc/systemd/system/tiny-dfr.service.d/90-omarchy-animation.conf.disabled
-' bash "$binary" "$ROOT/native/90-omarchy-animation.conf"
-echo 'Native renderer installed. Apply layout-animated.json to enable tracing.'
+done
+if [[ ! -f $package ]]; then
+  echo 'Built package not found' >&2
+  exit 1
+fi
+run_as_root /usr/bin/bash "$ROOT/native/install-package.sh" "$package"
+omarchy hook install font-set "$ROOT/hooks/90-touchbar-font"
+omarchy hook install post-boot "$ROOT/hooks/90-touchbar-font"
+bash "$ROOT/sync-font.sh"
+echo 'omarchy-touchbar package installed. Run enable-animation.sh to apply the layout.'

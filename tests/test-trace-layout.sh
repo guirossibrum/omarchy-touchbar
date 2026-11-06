@@ -28,6 +28,7 @@ try:
 except (OSError,subprocess.SubprocessError,IndexError):
     expected_font = 'monospace'
 assert config['FontTemplate'] == expected_font
+assert config['FontSyncUid'] == __import__('os').getuid()
 topology = json.loads((root/'assets/omarchy-topology.json').read_text())
 assert len(first['Trace']['Paths']) == len(topology['edges']) == 19
 assert len(topology['nodes']) == 18
@@ -54,6 +55,14 @@ assert [b['Action'] for b in config['PrimaryLayerKeys']] == ['F'+str(i) for i in
 subprocess.run(['python3', '-', *args], input=program, text=True, check=True)
 static = tomllib.loads((work/'config.toml').read_text())
 assert 'Trace' not in static['MediaLayerKeys'][0]
+# Explicit font overrides opt out of automatic user-font following.
+custom = json.loads((root/'layout-animated.json').read_text())
+custom['fontTemplate'] = 'monospace:bold'
+(work/'layout.json').write_text(json.dumps(custom))
+subprocess.run(['python3', '-', *args], input=program, text=True, check=True)
+custom_config = tomllib.loads((work/'config.toml').read_text())
+assert custom_config['FontTemplate'] == 'monospace:bold'
+assert 'FontSyncUid' not in custom_config
 # Reject non-finite values rather than injecting malformed TOML.
 invalid = json.loads((root/'layout-animated.json').read_text())
 invalid['buttons'][0]['trace']['LineWidth'] = float('nan')

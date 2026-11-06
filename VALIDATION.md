@@ -1,7 +1,7 @@
 # Hardware validation — 2026-11-05
 
 Host: M1 13-inch MacBook Pro (`MacBookPro17,1`), aarch64 Omarchy/Hyprland.
-Packaged tiny-dfr: 0.3.7-1. Native renderer: pinned by `native/source.env`.
+Packaged tiny-dfr: 0.3.7-1. Native renderer: pinned by `packaging/omarchy-touchbar/PKGBUILD`.
 
 - Native tests: 13 tests pass in the daemon target and 9 in the preview target.
 - Existing plugin bindings/I/O regression suite: pass.
@@ -90,3 +90,19 @@ core and one thread. This remains a short spot check, not a battery benchmark.
   changes, config reload and a fully off backlight.
 - After applying the combined update, the daemon invocation has no startup panic,
   Hyprland has no configuration errors, and user laptop-brightness bindings remain.
+
+## Managed package and automatic-font integration
+
+The daemon now builds as `omarchy-touchbar 0.3.8.omarchy1-1` from the pinned
+native commit in PKGBUILD. The makepkg build and check phase passed on aarch64:
+14 native tests and 9 preview tests. Package metadata declares a versioned
+`tiny-dfr` provider and a conflict with stock tiny-dfr. The local installation
+replaced stock tiny-dfr in one transaction; pacman owns both executable names.
+The service now uses `/usr/bin/tiny-dfr`, with no development ExecStart override.
+
+The font-set/post-boot hooks write only a bounded family string in a user-owned
+runtime directory. The daemon validates and watches it after dropping root.
+The initial live state update loaded JetBrainsMono Nerd Font without a panic.
+Unit/plugin checks cover bounded family input, atomic writer behavior with
+symlink/FIFO leftovers, system-font selection and explicit font opt-out.
+The x86_64 architecture is declared but has not been built/tested in this session.

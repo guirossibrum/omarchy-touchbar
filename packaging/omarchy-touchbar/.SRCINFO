@@ -1,0 +1,30 @@
+pkgbase = omarchy-touchbar
+	pkgdesc = Omarchy Touch Bar daemon: branching logo animation, tap/hold actions and desktop font sync
+	pkgver = 0.3.8.omarchy1
+	pkgrel = 1
+	url = https://github.com/guirossibrum/omarchy-touchbar
+	install = omarchy-touchbar.install
+	arch = aarch64
+	arch = x86_64
+	license = MIT
+	license = Apache-2.0
+	makedepends = git
+	makedepends = pkgconf
+	makedepends = rust
+	depends = cairo
+	depends = fontconfig
+	depends = freetype2
+	depends = gcc-libs
+	depends = glib2
+	depends = glibc
+	depends = libinput
+	depends = librsvg
+	depends = systemd-libs
+	provides = tiny-dfr=0.3.8
+	conflicts = tiny-dfr
+	source = tiny-dfr::git+https://github.com/guirossibrum/tiny-dfr.git#commit=6b77e96f8cef5ddf5c6c5c5b4a003b477f342ec9
+	source = setup-font-channel
+	sha256sums = SKIP
+	sha256sums = bd51ef3a04a635a1671179601d7f546fb5f87bf99e9f213d9770b82b33e9d8f9
+
+pkgname = omarchy-touchbar

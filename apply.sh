@@ -202,6 +202,7 @@ adaptive = "true" if layout.get("adaptiveBrightness", True) else "false"
 # Resolve in the user's fontconfig context: tiny-dfr runs as a system service
 # and cannot see the user's ~/.config/fontconfig selection itself.
 font_template = layout.get("fontTemplate", "system")
+font_sync_line = f"FontSyncUid = {os.getuid()}" if font_template == "system" else ""
 if font_template == "system":
     try:
         result = subprocess.run(["/usr/bin/fc-match", "monospace", "-f", "%{family}\n"],
@@ -218,6 +219,7 @@ MediaLayerDefault = {media_default}
 ShowButtonOutlines = {outlines}
 EnablePixelShift = false
 FontTemplate = {font_toml}
+{font_sync_line}
 AdaptiveBrightness = {adaptive}
 ActiveBrightness = 128
 
@@ -274,6 +276,7 @@ icon_source="$PLUGIN_DIR/assets/omarchy-green.svg"
 icon_target="$(dirname -- "$ETC_CONF")/omarchy-green.svg"
 
 if [[ -f $ETC_CONF ]] && cmp -s "$toml_out" "$ETC_CONF" && cmp -s "$icon_source" "$icon_target"; then
+  bash "$PLUGIN_DIR/sync-font.sh"
   exit 0
 fi
 
@@ -317,8 +320,16 @@ run_as_root() {
 install_bin=$(system_bin install)
 systemctl_bin=$(system_bin systemctl)
 bash_bin=$(system_bin bash)
-install_cmd="$(printf '%q' "$install_bin") -D -m 644 $(printf '%q' "$toml_out") $(printf '%q' "$ETC_CONF")"
+install_cmd=""
+if [[ -x /usr/lib/omarchy-touchbar/setup-font-channel ]] && grep -q "^FontSyncUid = " "$toml_out"; then
+  font_uid=$(/usr/bin/id -u)
+  font_gid=$(/usr/bin/id -g)
+  [[ $font_uid =~ ^[0-9]+$ && $font_gid =~ ^[0-9]+$ ]] || exit 1
+  install_cmd="/usr/lib/omarchy-touchbar/setup-font-channel $font_uid $font_gid && "
+fi
+install_cmd+="$(printf '%q' "$install_bin") -D -m 644 $(printf '%q' "$toml_out") $(printf '%q' "$ETC_CONF")"
 install_cmd+=" && $(printf '%q' "$install_bin") -m 644 $(printf '%q' "$icon_source") $(printf '%q' "$icon_target")"
 install_cmd+=" && $(printf '%q' "$systemctl_bin") restart tiny-dfr.service"
 
 run_as_root "$bash_bin" -c "$install_cmd"
+bash "$PLUGIN_DIR/sync-font.sh"

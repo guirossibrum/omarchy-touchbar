@@ -1,0 +1,5 @@
+#!/bin/bash
+# Omarchy passes the selected family to font-set; post-boot resolves the current one.
+script="$HOME/.config/omarchy/plugins/io.github.austindixson.touchbar/sync-font.sh"
+[[ -f $script ]] || exit 0
+exec /usr/bin/bash "$script" "$@"

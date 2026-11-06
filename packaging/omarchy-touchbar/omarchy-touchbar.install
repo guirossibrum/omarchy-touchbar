@@ -1,0 +1,10 @@
+post_install() {
+  if [[ -d /run/systemd/system ]]; then
+    systemctl daemon-reload
+    systemctl try-restart tiny-dfr.service
+  fi
+}
+
+post_upgrade() {
+  post_install
+}

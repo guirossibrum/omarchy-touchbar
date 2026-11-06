@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "io.github.austindixson.touchbar",
   "name": "Touch Bar",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "Austin Dixson, Guilherme Rossi Brum",
   "license": "MIT",
-  "description": "Apple Silicon Touch Bar controls with native branching animation, system-font labels, and tap/hold default dictation.",
+  "description": "Omarchy Touch Bar integration for the omarchy-touchbar daemon package: native animation, hold dictation and automatic desktop-font sync.",
   "kinds": [
     "service"
   ],

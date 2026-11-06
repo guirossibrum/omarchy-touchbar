@@ -1,3 +1,10 @@
 .DS_Store
 *.qmlc
 *.jsc
+
+# Local makepkg output
+packaging/**/src/
+packaging/**/pkg/
+packaging/**/*.pkg.tar.*
+packaging/**/tiny-dfr/
+packaging/**/*.log

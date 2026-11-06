@@ -10,8 +10,8 @@ Rust screensaver engine, through a companion tiny-dfr fork.
 
 ## Animated setup
 
-Install the packaged `tiny-dfr` first (`omarchy pkg add tiny-dfr`), then install
-this fork as the plugin. It uses the original plugin ID; replace the original
+Install this fork as the plugin, then build/install the companion
+`omarchy-touchbar` Arch package. It uses the original plugin ID; replace the original
 installation rather than enabling two copies.
 
 From a checkout of this repository:
@@ -21,13 +21,9 @@ From a checkout of this repository:
 ./enable-animation.sh
 ```
 
-The first command fetches a full pinned tiny-dfr revision, tests it, builds as
-your normal user, and elevates only to install the finished binary and a systemd
-override. It needs Rust, GCC, pkgconf, and the development files shipped with
-Cairo, Pango, librsvg, libinput, and systemd-libs. No packaged binary is replaced.
-The second command backs up your layout, moves the existing menu button first,
-enables its trace, installs the SVG asset, applies the layout, and restarts the
-daemon. Other buttons and custom laptop brightness bindings remain intact.
+The first command builds the pinned [omarchy-touchbar Arch package](packaging/omarchy-touchbar/README.md) as your user and installs it with pacman. The package provides and conflicts with `tiny-dfr`, replacing the stock package cleanly. Existing `tiny-dfr.service`, udev and config interfaces remain compatible. The setup helper migrates the earlier development override; the daemon is now package-owned under `/usr/bin`, not an untracked executable in `/usr/local`.
+
+The second command backs up your layout, moves the menu button first, enables its trace and hold action, installs the logo asset, and applies your configuration. Other buttons and user brightness bindings remain intact. Building needs Rust, GCC, git, pkgconf and the declared library dependencies; package tests run before installation. Only package installation and the initial layout apply require authorization.
 
 `layout.json` is the static default; `layout-animated.json` is a complete animated
 example. `enable-animation.sh` preserves your own layout rather than replacing
@@ -70,8 +66,11 @@ Omarchy before using the hold action.
 `fontTemplate` defaults to `"system"`: apply.sh resolves the user's selected
 monospace family through fontconfig. On this machine that is JetBrainsMono Nerd
 Font. The daemon uses a shared baseline and centers text by its visible bounds,
-so `term`, `lock` and `snip` align. Reapply the layout after changing the Omarchy
-font; there is no polling or font-change process. Set `fontTemplate` to a specific
+so `term`, `lock` and `snip` align. Font changes through Omarchy update the
+Touch Bar automatically via its `font-set` hook. The daemon listens for a small
+user-owned runtime state update; no reapply, restart, polling process, or
+authentication prompt is required. A `post-boot` hook restores the selected font
+after login. Set `fontTemplate` to a specific
 fontconfig pattern if you prefer a different family or weight.
 
 The fully green logo holds for one second; gray starts refilling immediately.
@@ -83,8 +82,8 @@ Animation remains active while idle-dimmed, and stops when the bar is fully off.
 ./install-native.sh --uninstall
 ```
 
-This removes only this fork's service override and custom executable, then
-restarts the packaged tiny-dfr. It ignores the `Trace` field and displays the
+This replaces `omarchy-touchbar` with stock `tiny-dfr` through pacman and removes
+the user font-sync hooks. It ignores the `Trace` field and displays the
 static icon. Your menu action, layout and adaptive brightness remain available.
 
 ### Validation and upstream review
@@ -92,6 +91,7 @@ static icon. Your menu action, layout and adaptive brightness remain available.
 ```sh
 bash tests/test-bindings-io.sh
 bash tests/test-trace-layout.sh
+bash tests/test-font-sync.sh
 ```
 
 Native tests and a headless preview renderer are documented in the companion

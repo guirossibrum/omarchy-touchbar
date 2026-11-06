@@ -31,9 +31,9 @@ still owned by tiny-dfr/system policy, not an animation process.
 2. **This plugin:** SVG/logo paths, static and animated layouts, JSON-to-TOML
    serialization, an opt-in pinned native build/install helper, and rollback.
 
-The plugin is the entry point for users. `native/source.env` pins its matching
-daemon revision; Cargo.lock pins the ttfx dependency. Packaged tiny-dfr is kept
-and can be restored by removing one systemd override.
+The plugin is the entry point for users. `packaging/omarchy-touchbar/PKGBUILD` pins its matching
+daemon revision; Cargo.lock pins the ttfx dependency. The `omarchy-touchbar` package provides/conflicts with `tiny-dfr`; rollback
+reinstalls the stock package through pacman. No development override is needed.
 
 ## Proposed upstream sequence
 
@@ -62,3 +62,21 @@ Tap/hold is native input handling, not a polling shell timer. The daemon emits
 F15 only after the hold threshold; the plugin binds it through Omarchy's existing
 backend-neutral dictation commands. Short taps remain Search/menu actions. Tests
 cover tap/hold exclusivity, threshold behavior, cancellation and label alignment.
+
+## Dependency proposal
+
+The proposed dependency is **omarchy-touchbar**, not an assumption that upstream
+Asahi tiny-dfr will merge these changes. Omarchy can choose to maintain a fork
+and publish its package independently. That ownership decision belongs to its
+maintainers. This is a community fork and local package until they agree.
+
+The package includes a standard PKGBUILD and .SRCINFO, a pinned Rust source
+revision, a compatibility `tiny-dfr` executable and service, and the original
+udev rules/assets. It declares `provides=('tiny-dfr=0.3.8')` and
+`conflicts=('tiny-dfr')`. The optional plugin remains the user-session integration.
+
+Font following is event-driven: an Omarchy `font-set` hook writes only a bounded
+family name to a user-owned file under /run. The daemon watches that directory,
+validates the owner/type/length, and reloads only the font after dropping root.
+One initial authorized layout apply creates a tmpfiles rule. Future font changes
+do not invoke sudo/pkexec, edit /etc, restart the daemon, or spawn idle processes.
