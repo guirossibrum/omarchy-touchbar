@@ -1,0 +1,292 @@
+{
+  "mediaLayerDefault": true,
+  "showButtonOutlines": true,
+  "adaptiveBrightness": true,
+  "buttons": [
+    {
+      "icon": "omarchy-green",
+      "key": "Search",
+      "hyprKey": "XF86Search",
+      "command": "omarchy-menu toggle",
+      "trace": {
+        "Paths": [
+          [
+            [
+              0.034,
+              0.034
+            ],
+            [
+              0.034,
+              0.5
+            ],
+            [
+              0.034,
+              0.966
+            ],
+            [
+              0.5,
+              0.966
+            ],
+            [
+              0.5,
+              0.829
+            ],
+            [
+              0.171,
+              0.829
+            ],
+            [
+              0.171,
+              0.5
+            ],
+            [
+              0.034,
+              0.5
+            ],
+            [
+              0.171,
+              0.5
+            ],
+            [
+              0.171,
+              0.171
+            ],
+            [
+              0.5,
+              0.171
+            ],
+            [
+              0.5,
+              0.034
+            ],
+            [
+              0.034,
+              0.034
+            ],
+            [
+              0.5,
+              0.034
+            ],
+            [
+              0.966,
+              0.034
+            ],
+            [
+              0.966,
+              0.966
+            ],
+            [
+              0.611,
+              0.966
+            ],
+            [
+              0.966,
+              0.966
+            ],
+            [
+              0.966,
+              0.034
+            ],
+            [
+              0.5,
+              0.034
+            ],
+            [
+              0.5,
+              0.171
+            ],
+            [
+              0.538,
+              0.171
+            ],
+            [
+              0.5,
+              0.171
+            ],
+            [
+              0.171,
+              0.171
+            ],
+            [
+              0.171,
+              0.5
+            ],
+            [
+              0.171,
+              0.829
+            ],
+            [
+              0.5,
+              0.829
+            ],
+            [
+              0.829,
+              0.829
+            ],
+            [
+              0.829,
+              0.171
+            ],
+            [
+              0.753,
+              0.171
+            ],
+            [
+              0.829,
+              0.171
+            ],
+            [
+              0.829,
+              0.829
+            ],
+            [
+              0.5,
+              0.829
+            ],
+            [
+              0.5,
+              0.966
+            ],
+            [
+              0.536,
+              0.966
+            ],
+            [
+              0.5,
+              0.966
+            ],
+            [
+              0.034,
+              0.966
+            ],
+            [
+              0.034,
+              0.5
+            ],
+            [
+              0.034,
+              0.034
+            ]
+          ]
+        ],
+        "Color": [
+          0.57,
+          0.8,
+          0.33
+        ],
+        "BaseColor": [
+          0.4,
+          0.4,
+          0.4
+        ],
+        "LineWidth": 0.068,
+        "DurationSeconds": 3.2,
+        "PauseSeconds": 0.5
+      }
+    },
+    {
+      "icon": "brightness_low",
+      "key": "BrightnessDown"
+    },
+    {
+      "icon": "brightness_high",
+      "key": "BrightnessUp"
+    },
+    {
+      "text": "term",
+      "key": "F13",
+      "hyprKey": "code:191",
+      "command": "omarchy-launch-terminal"
+    },
+    {
+      "text": "lock",
+      "key": "F14",
+      "hyprKey": "code:192",
+      "command": "omarchy-system-lock"
+    },
+    {
+      "text": "snip",
+      "key": "Print",
+      "hyprKey": "PRINT",
+      "command": "omarchy-capture-screenshot"
+    },
+    {
+      "icon": "mic_off",
+      "key": "MicMute"
+    },
+    {
+      "icon": "play_pause",
+      "key": "PlayPause"
+    },
+    {
+      "icon": "fast_rewind",
+      "key": "PreviousSong"
+    },
+    {
+      "icon": "fast_forward",
+      "key": "NextSong"
+    },
+    {
+      "icon": "volume_off",
+      "key": "Mute"
+    },
+    {
+      "icon": "volume_down",
+      "key": "VolumeDown"
+    },
+    {
+      "icon": "volume_up",
+      "key": "VolumeUp"
+    }
+  ],
+  "fnLayer": [
+    {
+      "text": "F1",
+      "key": "F1"
+    },
+    {
+      "text": "F2",
+      "key": "F2"
+    },
+    {
+      "text": "F3",
+      "key": "F3"
+    },
+    {
+      "text": "F4",
+      "key": "F4"
+    },
+    {
+      "text": "F5",
+      "key": "F5"
+    },
+    {
+      "text": "F6",
+      "key": "F6"
+    },
+    {
+      "text": "F7",
+      "key": "F7"
+    },
+    {
+      "text": "F8",
+      "key": "F8"
+    },
+    {
+      "text": "F9",
+      "key": "F9"
+    },
+    {
+      "text": "F10",
+      "key": "F10"
+    },
+    {
+      "text": "F11",
+      "key": "F11"
+    },
+    {
+      "text": "F12",
+      "key": "F12"
+    }
+  ]
+}

@@ -1,5 +1,74 @@
 # Touch Bar for Omarchy
 
+This community fork keeps Austin Dixson's plugin and adds a native animated
+Omarchy menu icon in the first position. Gray traces to green, then green back
+to gray, with a different starting point each pass. The key still opens the
+Omarchy menu. The animation uses the **actual ttfx Wipe effect** from Omarchy's
+Rust screensaver engine, through a companion tiny-dfr fork.
+
+![Native Rust/Cairo animation preview, enlarged 4x](assets/omarchy-trace-preview.gif)
+
+## Animated setup
+
+Install the packaged `tiny-dfr` first (`omarchy pkg add tiny-dfr`), then install
+this fork as the plugin. It uses the original plugin ID; replace the original
+installation rather than enabling two copies.
+
+From a checkout of this repository:
+
+```sh
+./install-native.sh
+./enable-animation.sh
+```
+
+The first command fetches a full pinned tiny-dfr revision, tests it, builds as
+your normal user, and elevates only to install the finished binary and a systemd
+override. It needs Rust, GCC, pkgconf, and the development files shipped with
+Cairo, Pango, librsvg, libinput, and systemd-libs. No packaged binary is replaced.
+The second command backs up your layout, moves the existing menu button first,
+enables its trace, installs the SVG asset, applies the layout, and restarts the
+daemon. Other buttons and custom laptop brightness bindings remain intact.
+
+`layout.json` is the static default; `layout-animated.json` is a complete animated
+example. `enable-animation.sh` preserves your own layout rather than replacing
+it with that example. Set `trace` on the menu button to the numeric object in
+`assets/omarchy-trace.json` to tune colors, width, speed, and pause. Removing it
+restores the static green glyph. Adaptive brightness stays enabled.
+
+The daemon uses ttfx to generate a 128-sample Wipe mask once on load, then drops
+the effect engine. Playback runs in tiny-dfr's existing Rust event loop, at
+roughly 15 fps, with only animated buttons marked dirty. There are no animation
+subprocesses, terminal windows, config-reload loops, or frame-image assets.
+Animation wakeups stop on the Fn layer and when the Touch Bar dims or turns off.
+Starting points are chosen by ttfx's RNG; the stored sequence repeats after 64
+passes and adjacent passes always differ.
+
+The logo follows one connected, closed walk through its rails. At a branch the
+walk may retrace a rail already colored, but it never jumps to an unrelated
+stroke or leaves detached stroke fragments to change at the end.
+
+### Rollback
+
+```sh
+./install-native.sh --uninstall
+```
+
+This removes only this fork's service override and custom executable, then
+restarts the packaged tiny-dfr. It ignores the `Trace` field and displays the
+static icon. Your menu action, layout and adaptive brightness remain available.
+
+### Validation and upstream review
+
+```sh
+bash tests/test-bindings-io.sh
+bash tests/test-trace-layout.sh
+```
+
+Native tests and a headless preview renderer are documented in the companion
+fork's [TRACE.md](https://github.com/guirossibrum/tiny-dfr/blob/feature/animated-outline/TRACE.md).
+The preview above uses that exact Rust renderer, without DRM or root.
+See [UPSTREAM.md](UPSTREAM.md) for the dependency boundary and proposed PR scope.
+
 Puts Omarchy actions on the Mac Touch Bar using [tiny-dfr](https://github.com/AsahiLinux/tiny-dfr). Tested on MacBookPro17,1 (M1 13-inch).
 
 **Default strip (no Fn):** brightness, Omarchy menu, terminal, lock, screenshot, mic mute, play/prev/next, mute/volume.

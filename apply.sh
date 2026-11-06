@@ -163,6 +163,19 @@ def toml_btn(btn):
         parts.insert(0, f'Icon = "{btn["icon"]}"')
     elif btn.get("text"):
         parts.insert(0, f'Text = "{btn["text"]}"')
+    if btn.get("trace"):
+        trace = btn["trace"]
+        allowed = {"Paths", "Color", "BaseColor", "LineWidth", "DurationSeconds", "PauseSeconds"}
+        if not isinstance(trace, dict) or set(trace) - allowed or "Paths" not in trace:
+            sys.exit("apply.sh: invalid Trace fields")
+        # Trace is numeric data only, serialized as a TOML inline table.
+        def numeric(value):
+            if isinstance(value, list):
+                return "[" + ", ".join(numeric(item) for item in value) + "]"
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not __import__('math').isfinite(value):
+                sys.exit("apply.sh: Trace requires finite numeric values")
+            return repr(value)
+        parts.append("Trace = { " + ", ".join(key + " = " + numeric(value) for key, value in trace.items()) + " }")
     if btn.get("stretch"):
         parts.append(f"Stretch = {int(btn['stretch'])}")
     return "    { " + ", ".join(parts) + " }"
@@ -199,7 +212,7 @@ for btn in media:
         continue
     seen.add(hypr)
     desc = btn.get("text") or btn.get("icon") or hypr
-    bind_lines.append(f'o.bind("{hypr}", "Touch Bar {desc}", "{cmd}")')
+    bind_lines.append(f'o.rebind("{hypr}", "Touch Bar {desc}", "{cmd}")')
 bind_lines.append(end)
 block = "\n".join(bind_lines) + "\n"
 
@@ -224,7 +237,10 @@ PY
 
 [[ ${OMARCHY_TOUCHBAR_SKIP_INSTALL:-} == 1 ]] && exit 0
 
-if [[ -f $ETC_CONF ]] && cmp -s "$toml_out" "$ETC_CONF"; then
+icon_source="$PLUGIN_DIR/assets/omarchy-green.svg"
+icon_target="$(dirname -- "$ETC_CONF")/omarchy-green.svg"
+
+if [[ -f $ETC_CONF ]] && cmp -s "$toml_out" "$ETC_CONF" && cmp -s "$icon_source" "$icon_target"; then
   exit 0
 fi
 
@@ -269,6 +285,7 @@ install_bin=$(system_bin install)
 systemctl_bin=$(system_bin systemctl)
 bash_bin=$(system_bin bash)
 install_cmd="$(printf '%q' "$install_bin") -D -m 644 $(printf '%q' "$toml_out") $(printf '%q' "$ETC_CONF")"
+install_cmd+=" && $(printf '%q' "$install_bin") -m 644 $(printf '%q' "$icon_source") $(printf '%q' "$icon_target")"
 install_cmd+=" && $(printf '%q' "$systemctl_bin") restart tiny-dfr.service"
 
 run_as_root "$bash_bin" -c "$install_cmd"
