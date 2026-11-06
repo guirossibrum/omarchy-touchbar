@@ -213,8 +213,13 @@
         ],
         "LineWidth": 0.068,
         "DurationSeconds": 3.2,
-        "PauseSeconds": 0.5
-      }
+        "PauseSeconds": 1.0
+      },
+      "holdKey": "F15",
+      "holdMilliseconds": 600,
+      "holdHyprKey": "code:193",
+      "holdStartCommand": "omarchy dictation start",
+      "holdStopCommand": "omarchy dictation stop"
     },
     {
       "icon": "brightness_low",
@@ -320,5 +325,6 @@
       "text": "F12",
       "key": "F12"
     }
-  ]
+  ],
+  "fontTemplate": "system"
 }

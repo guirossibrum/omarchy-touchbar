@@ -63,7 +63,7 @@ toml_out=$(mktemp)
 trap 'rm -f "$toml_out"' EXIT
 
 python3 - "$LAYOUT" "$BINDINGS" "$MARKER_BEGIN" "$MARKER_END" "$GENERATED_MARK" "$toml_out" "$MAX_LAYOUT_BYTES" "$MAX_BINDINGS_BYTES" <<'PY'
-import json, os, secrets, stat, sys
+import json, os, secrets, stat, subprocess, sys
 
 layout_path, bindings_path, begin, end, mark, toml_out = sys.argv[1:7]
 max_bytes = int(sys.argv[7])
@@ -163,6 +163,15 @@ def toml_btn(btn):
         parts.insert(0, f'Icon = "{btn["icon"]}"')
     elif btn.get("text"):
         parts.insert(0, f'Text = "{btn["text"]}"')
+    if btn.get("holdKey"):
+        hold = btn["holdKey"]
+        if not isinstance(hold,str) or not hold.isalnum():
+            sys.exit("apply.sh: invalid holdKey")
+        delay = btn.get("holdMilliseconds",600)
+        if isinstance(delay,bool) or not isinstance(delay,int) or not 200 <= delay <= 2000:
+            sys.exit("apply.sh: holdMilliseconds must be 200..2000")
+        parts.append("HoldAction = " + json.dumps(hold))
+        parts.append("HoldMilliseconds = " + str(delay))
     if btn.get("trace"):
         trace = btn["trace"]
         allowed = {"Paths", "Color", "BaseColor", "LineWidth", "DurationSeconds", "PauseSeconds"}
@@ -190,11 +199,25 @@ media_default = "true" if layout.get("mediaLayerDefault", True) else "false"
 outlines = "true" if layout.get("showButtonOutlines", True) else "false"
 adaptive = "true" if layout.get("adaptiveBrightness", True) else "false"
 
+# Resolve in the user's fontconfig context: tiny-dfr runs as a system service
+# and cannot see the user's ~/.config/fontconfig selection itself.
+font_template = layout.get("fontTemplate", "system")
+if font_template == "system":
+    try:
+        result = subprocess.run(["/usr/bin/fc-match", "monospace", "-f", "%{family}\n"],
+                                capture_output=True, text=True, check=True, timeout=2)
+        font_template = result.stdout.splitlines()[0].split(",")[0].strip() or "monospace"
+    except (OSError, subprocess.SubprocessError, IndexError):
+        font_template = "monospace"
+if not isinstance(font_template, str) or not font_template or len(font_template) > 256:
+    sys.exit("apply.sh: invalid fontTemplate")
+font_toml = json.dumps(font_template, ensure_ascii=False)
+
 toml = f"""# {mark}
 MediaLayerDefault = {media_default}
 ShowButtonOutlines = {outlines}
 EnablePixelShift = false
-FontTemplate = ":bold"
+FontTemplate = {font_toml}
 AdaptiveBrightness = {adaptive}
 ActiveBrightness = 128
 
@@ -213,6 +236,16 @@ for btn in media:
     seen.add(hypr)
     desc = btn.get("text") or btn.get("icon") or hypr
     bind_lines.append(f'o.rebind("{hypr}", "Touch Bar {desc}", "{cmd}")')
+for btn in media:
+    hypr = btn.get("holdHyprKey")
+    start = btn.get("holdStartCommand")
+    stop = btn.get("holdStopCommand")
+    if not hypr or not start or not stop or hypr in seen:
+        continue
+    seen.add(hypr)
+    quote = lambda value: json.dumps(value, ensure_ascii=False)
+    bind_lines.append(f'hl.unbind({quote(hypr)})')
+    bind_lines.append(f'o.bind_hold({quote(hypr)}, "Touch Bar start dictation", {quote(start)}, "Touch Bar stop dictation", {quote(stop)}, {{ ignore_mods = true }})')
 bind_lines.append(end)
 block = "\n".join(bind_lines) + "\n"
 

@@ -19,6 +19,15 @@ subprocess.run(['python3', '-', *args], input=program, text=True, check=True)
 config = tomllib.loads((work/'config.toml').read_text())
 first = config['MediaLayerKeys'][0]
 assert first['Icon'] == 'omarchy-green' and first['Action'] == 'Search'
+assert first['HoldAction'] == 'F15' and first['HoldMilliseconds'] == 600
+assert 'o.bind_hold("code:193"' in (work/'bindings.lua').read_text()
+assert '"omarchy dictation start"' in (work/'bindings.lua').read_text()
+assert '"omarchy dictation stop"' in (work/'bindings.lua').read_text()
+try:
+    expected_font = subprocess.check_output(['/usr/bin/fc-match','monospace','-f','%{family}\n'],text=True,timeout=2).splitlines()[0].split(',')[0].strip()
+except (OSError,subprocess.SubprocessError,IndexError):
+    expected_font = 'monospace'
+assert config['FontTemplate'] == expected_font
 topology = json.loads((root/'assets/omarchy-topology.json').read_text())
 assert len(first['Trace']['Paths']) == len(topology['edges']) == 19
 assert len(topology['nodes']) == 18
@@ -36,6 +45,7 @@ for entry in routes:
         assert len(nodes) == len(set(nodes))
         assert nodes[0] == entry['from'] and nodes[-1] == entry['to']
         assert all(tuple(sorted((tuple(positions[a]),tuple(positions[b])))) in rails for a,b in zip(nodes,nodes[1:]))
+assert first['Trace']['PauseSeconds'] == 1.0
 assert config['AdaptiveBrightness'] is True
 assert 'o.rebind("PRINT"' in (work/'bindings.lua').read_text()
 assert [b['Action'] for b in config['PrimaryLayerKeys']] == ['F'+str(i) for i in range(1,13)]
@@ -49,5 +59,5 @@ invalid = json.loads((root/'layout-animated.json').read_text())
 invalid['buttons'][0]['trace']['LineWidth'] = float('nan')
 (work/'layout.json').write_text(json.dumps(invalid))
 assert subprocess.run(['python3', '-', *args], input=program, text=True, capture_output=True).returncode != 0
-print('PASS: animated schema, first-position action, static fallback, Fn keys, adaptive brightness, binding replacement, invalid numbers')
+print('PASS: trace schema, tap/hold dictation routing, system font, static fallback, Fn keys, adaptive brightness, invalid numbers')
 PY

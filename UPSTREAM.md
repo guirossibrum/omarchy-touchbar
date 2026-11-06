@@ -50,3 +50,15 @@ using Hyprland and tiny-dfr's normal DRM/input devices. The local machine also
 has a separate logind-based lid guard for a spurious libinput lid event; that
 workaround is independent of this animation patch and is not installed by this
 plugin. CPU, lid and layer checks are recorded in VALIDATION.md once measured.
+
+## Timing, alignment and dictation refinements
+
+The green-only hold defaults to one second; gray has no hold. Idle-dim animation
+continues, with full-off and hidden-layer sleep retained. Text uses font metrics
+for one shared baseline and ink-centered horizontal placement. The plugin
+resolves the user's Omarchy monospace family when applying the layout.
+
+Tap/hold is native input handling, not a polling shell timer. The daemon emits
+F15 only after the hold threshold; the plugin binds it through Omarchy's existing
+backend-neutral dictation commands. Short taps remain Search/menu actions. Tests
+cover tap/hold exclusivity, threshold behavior, cancellation and label alignment.

@@ -51,5 +51,6 @@ The runtime uses shortest arrival distances rather than scanning this export.
 The shared ttfx Wipe uses `Linear` easing, with interpolation between samples.
 `DurationSeconds` sets the time to travel the graph's node-to-node diameter,
 giving a fixed physical travel speed across all source locations. A pass may
-finish sooner when its source is centrally located. `PauseSeconds` begins only
-after its last front fills the last gap.
+finish sooner when its source is centrally located. The fully green state holds
+for `PauseSeconds` (one second by default). The fully gray state has no hold:
+gray immediately starts filling green again.

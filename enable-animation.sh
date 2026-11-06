@@ -14,6 +14,7 @@ if layout.exists():
     shutil.copy2(layout, str(layout) + '.bak-' + suffix)
 else:
     data = json.loads((root/'layout.json').read_text())
+data.setdefault('fontTemplate', 'system')
 buttons = data.get('buttons', [])
 index = next((i for i, b in enumerate(buttons) if b.get('key') == 'Search'), None)
 if index is None:
@@ -21,6 +22,11 @@ if index is None:
 menu = buttons.pop(index)
 menu.pop('text', None)
 menu['icon'] = 'omarchy-green'
+menu.setdefault('holdKey','F15')
+menu.setdefault('holdMilliseconds',600)
+menu.setdefault('holdHyprKey','code:193')
+menu.setdefault('holdStartCommand','omarchy dictation start')
+menu.setdefault('holdStopCommand','omarchy dictation stop')
 menu['trace'] = json.loads((root/'assets/omarchy-trace.json').read_text())
 buttons.insert(0, menu)
 layout.parent.mkdir(parents=True, exist_ok=True)

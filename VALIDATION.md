@@ -3,7 +3,7 @@
 Host: M1 13-inch MacBook Pro (`MacBookPro17,1`), aarch64 Omarchy/Hyprland.
 Packaged tiny-dfr: 0.3.7-1. Native renderer: pinned by `native/source.env`.
 
-- Native unit tests: eight unique tests pass in the daemon and preview targets.
+- Native tests: 13 tests pass in the daemon target and 9 in the preview target.
 - Existing plugin bindings/I/O regression suite: pass.
 - Trace layout/schema, finite numeric fields, menu action/position, Fn mapping,
   static fallback and binding replacement checks: pass.
@@ -68,3 +68,25 @@ includes rail interiors so no gaps are left at phase completion.
 The current live invocation started without a panic, with all 19 configured
 rails. A 8.0-second sample measured 1.375% of one CPU
 core and one thread. This remains a short spot check, not a battery benchmark.
+
+## Green hold, idle dim, labels and dictation
+
+- Timing tests verify a one-second hold only while fully green and immediate
+  recoloring after reaching gray, across all 64 source phases.
+- Animation scheduling now permits idle-dim brightness 1 and sleeps only for
+  full-off brightness 0 or a static layer. A 42-second live probe did not observe
+  an idle-dim state, so this probe does not establish live dim behavior. The
+  implementation's gate and timing regression tests were checked.
+- Text layout tests verify `term`, `lock`, and `snip` share a baseline and are
+  horizontally centered using glyph bearings. The generated live FontTemplate
+  is `JetBrainsMono Nerd Font`, matching the user's current Omarchy monospace.
+- Plugin schema tests verify font resolution, a 600 ms F15 HoldAction, and
+  backend-neutral `omarchy dictation start` / `omarchy dictation stop` bindings.
+  The live backend selector returns `superwhisper`; both generated press/release
+  shortcuts are present. No microphone recording was started during validation.
+- Native gesture tests verify short taps never start holds, holds start only
+  once and release without tapping, and sliding off cancels/releases correctly.
+  Cancellation also releases the gesture on input cancel, device removal, layer
+  changes, config reload and a fully off backlight.
+- After applying the combined update, the daemon invocation has no startup panic,
+  Hyprland has no configuration errors, and user laptop-brightness bindings remain.

@@ -39,7 +39,8 @@ The daemon uses ttfx to generate a 128-sample Wipe mask once on load, then drops
 the effect engine. Playback runs in tiny-dfr's existing Rust event loop, at
 roughly 15 fps, with only animated buttons marked dirty. There are no animation
 subprocesses, terminal windows, config-reload loops, or frame-image assets.
-Animation wakeups stop on the Fn layer and when the Touch Bar dims or turns off.
+Animation continues at idle-dim brightness. Wakeups stop on the Fn layer and
+when the Touch Bar is fully off, including lid-close power-off.
 Starting points are chosen by ttfx's RNG; the stored sequence repeats after 64
 passes and adjacent passes always differ.
 
@@ -52,9 +53,29 @@ and forks. More simultaneous fronts can change more pixels, but no front acceler
 
 `DurationSeconds` sets the time to travel the graph's longest node-to-node distance;
 the same distance-per-second applies to all starts. A pass finishes when its last
-front arrives, followed by `PauseSeconds`. `assets/omarchy-topology.svg` labels
+front arrives. Only the fully green state holds for `PauseSeconds` (one second
+by default); fully gray immediately begins recoloring green. `assets/omarchy-topology.svg` labels
 all nodes and forks; [TOPOLOGY.md](TOPOLOGY.md) explains the routing and complete
 route export.
+
+### Logo tap/hold and text labels
+
+Tap the logo to open the Omarchy menu. Hold it for 600 ms to start push-to-talk
+with the backend selected in **Setup > Defaults > Dictation**; release to stop.
+Sliding off cancels without opening the menu. The plugin calls `omarchy dictation
+start/stop`, so it does not hard-code Superwhisper, Voxtype or another backend.
+Changing the default backend takes effect on the next gesture. Configure it in
+Omarchy before using the hold action.
+
+`fontTemplate` defaults to `"system"`: apply.sh resolves the user's selected
+monospace family through fontconfig. On this machine that is JetBrainsMono Nerd
+Font. The daemon uses a shared baseline and centers text by its visible bounds,
+so `term`, `lock` and `snip` align. Reapply the layout after changing the Omarchy
+font; there is no polling or font-change process. Set `fontTemplate` to a specific
+fontconfig pattern if you prefer a different family or weight.
+
+The fully green logo holds for one second; gray starts refilling immediately.
+Animation remains active while idle-dimmed, and stops when the bar is fully off.
 
 ### Rollback
 
