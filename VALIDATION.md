@@ -3,15 +3,17 @@
 Host: M1 13-inch MacBook Pro (`MacBookPro17,1`), aarch64 Omarchy/Hyprland.
 Packaged tiny-dfr: 0.3.7-1. Native renderer: pinned by `packaging/omarchy-touchbar/PKGBUILD`.
 
-- Native tests: 13 tests pass in the daemon target and 9 in the preview target.
+- Native tests: 14 tests pass in the daemon target and 9 in the preview target.
 - Existing plugin bindings/I/O regression suite: pass.
 - Trace layout/schema, finite numeric fields, menu action/position, Fn mapping,
   static fallback and binding replacement checks: pass.
 - Rust formatting, shell syntax, Git whitespace checks: pass.
-- Installer fetches the full pinned commit, tests, builds and validates the real
-  installed configuration before activation. This path was exercised end to end.
-- Live daemon uses `/usr/local/libexec/tiny-dfr-omarchy`, one thread, and its
-  current invocation has no startup panic. Packaged executable is retained.
+- The package build fetches the full pinned commit and runs its tests. The
+  package installer verifies the new invocation and can restore stock tiny-dfr
+  if startup reports a caught panic. The local package transaction passed.
+- Live daemon uses package-owned `/usr/bin/tiny-dfr` (a compatibility symlink to
+  `/usr/bin/omarchy-touchbar`), one thread, with no startup panic. Stock tiny-dfr
+  can be restored through pacman.
 - The third-to-first menu move keeps `Action = "Search"`; all user laptop
   brightness overrides remain in bindings.lua. Hyprland reports no config errors.
 - Final live layout uses an explicit graph with 18 nodes, 19 rails and six
@@ -106,3 +108,11 @@ The initial live state update loaded JetBrainsMono Nerd Font without a panic.
 Unit/plugin checks cover bounded family input, atomic writer behavior with
 symlink/FIFO leftovers, system-font selection and explicit font opt-out.
 The x86_64 architecture is declared but has not been built/tested in this session.
+
+The actual installed font-set hook was exercised with Adwaita Mono, then the
+current system font (JetBrainsMono Nerd Font) was restored. The daemon logged both
+updates and retained PID 355801 throughout. Font changes used no pkexec/sudo,
+service restart, or system-font setting mutation. The system font itself was
+left unchanged; the test invoked only this plugin's hook, not other user hooks.
+`pacman -Qkk omarchy-touchbar` reports 50 files and zero altered files. The
+existing lid guard and daemon are active, and Hyprland reports no config errors.
