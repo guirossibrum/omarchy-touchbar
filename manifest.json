@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "io.github.austindixson.touchbar",
   "name": "Touch Bar",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Austin Dixson, Guilherme Rossi Brum",
   "license": "MIT",
-  "description": "Apple Silicon Touch Bar controls with a first-position Omarchy menu logo and optional native ttfx tracing animation.",
+  "description": "Apple Silicon Touch Bar controls with a first-position Omarchy menu and optional constant-speed branching ttfx animation.",
   "kinds": [
     "service"
   ],

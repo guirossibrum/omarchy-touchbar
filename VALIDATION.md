@@ -3,7 +3,7 @@
 Host: M1 13-inch MacBook Pro (`MacBookPro17,1`), aarch64 Omarchy/Hyprland.
 Packaged tiny-dfr: 0.3.7-1. Native renderer: pinned by `native/source.env`.
 
-- Native unit tests: three unique tests pass in the daemon and preview targets.
+- Native unit tests: eight unique tests pass in the daemon and preview targets.
 - Existing plugin bindings/I/O regression suite: pass.
 - Trace layout/schema, finite numeric fields, menu action/position, Fn mapping,
   static fallback and binding replacement checks: pass.
@@ -14,9 +14,11 @@ Packaged tiny-dfr: 0.3.7-1. Native renderer: pinned by `native/source.env`.
   current invocation has no startup panic. Packaged executable is retained.
 - The third-to-first menu move keeps `Action = "Search"`; all user laptop
   brightness overrides remain in bindings.lua. Hyprland reports no config errors.
-- Final live layout uses one connected closed path with 39 points. It covers all
-  19 logo rails through a continuous walk, rather than concatenating five
-  disconnected strokes. The preview GIF is regenerated from these exact settings.
+- Final live layout uses an explicit graph with 18 nodes, 19 rails and six
+  degree-3 junctions. Tests verify splitting into two/three outgoing branches,
+  merging around loops, complete rail coverage, linear timing and sources clear
+  of nodes. All 495 simple routes are exported and checked against the graph.
+  The preview GIF is regenerated from these exact settings.
 
 ## Short resource samples
 
@@ -27,7 +29,7 @@ These are short spot checks, not battery or sustained performance benchmarks.
 | Mode | Sample | CPU, one core | RSS |
 | --- | ---: | ---: | ---: |
 | Packaged static daemon | 5.0 s | 0.2% | 23552 KiB |
-| Final native continuous trace | 8.0 s | 0.625% | 29408 KiB |
+| Previous continuous-walk implementation | 8.0 s | 0.625% | 29408 KiB |
 | Native function-key layer | 5.0 s | 0.0% | not sampled |
 
 The function-key layer was selected by temporarily setting `MediaLayerDefault`
@@ -54,3 +56,15 @@ packaged service if startup fails. Subsequent validation and live startup pass.
 The machine has a pre-existing logind lid guard for a spurious libinput lid event.
 This animation change does not install or replace that workaround. Physical
 lid-close/open behavior was not re-tested during these animation measurements.
+
+## Constant-speed branching update
+
+The renderer now uses the real ttfx Wipe with Linear easing. Weighted arrival
+distances for 64 interior sources are computed when loading the icon. Sources
+are at least one line-width from both nodes. Fronts launch both ways, split
+at every reached junction, and merge on rails; the last-arrival calculation
+includes rail interiors so no gaps are left at phase completion.
+
+The current live invocation started without a panic, with all 19 configured
+rails. A 8.0-second sample measured 1.375% of one CPU
+core and one thread. This remains a short spot check, not a battery benchmark.

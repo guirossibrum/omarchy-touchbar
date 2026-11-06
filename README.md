@@ -43,9 +43,18 @@ Animation wakeups stop on the Fn layer and when the Touch Bar dims or turns off.
 Starting points are chosen by ttfx's RNG; the stored sequence repeats after 64
 passes and adjacent passes always differ.
 
-The logo follows one connected, closed walk through its rails. At a branch the
-walk may retrace a rail already colored, but it never jumps to an unrelated
-stroke or leaves detached stroke fragments to change at the end.
+The logo is an explicit graph of 18 nodes, 19 rails, and six three-way junctions.
+A start is always inside a rail, at least one line-width away from both nodes.
+It launches fronts in both directions. At a junction each front continues into
+every unvisited outgoing rail; fronts merge when they meet, including around
+loops. Linear ttfx Wipe timing keeps the travel speed consistent through corners
+and forks. More simultaneous fronts can change more pixels, but no front accelerates.
+
+`DurationSeconds` sets the time to travel the graph's longest node-to-node distance;
+the same distance-per-second applies to all starts. A pass finishes when its last
+front arrives, followed by `PauseSeconds`. `assets/omarchy-topology.svg` labels
+all nodes and forks; [TOPOLOGY.md](TOPOLOGY.md) explains the routing and complete
+route export.
 
 ### Rollback
 
@@ -71,7 +80,7 @@ See [UPSTREAM.md](UPSTREAM.md) for the dependency boundary and proposed PR scope
 
 Puts Omarchy actions on the Mac Touch Bar using [tiny-dfr](https://github.com/AsahiLinux/tiny-dfr). Tested on MacBookPro17,1 (M1 13-inch).
 
-**Default strip (no Fn):** brightness, Omarchy menu, terminal, lock, screenshot, mic mute, play/prev/next, mute/volume.
+**Default strip (no Fn):** Omarchy menu, brightness, terminal, lock, screenshot, mic mute, play/prev/next, mute/volume.
 
 **Hold Fn:** F1–F12.
 
@@ -87,7 +96,7 @@ tiny-dfr can only inject keycodes. Menu uses `XF86Search`. Terminal and lock emi
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/austindixson/omarchy-touchbar.git --enable --yes
+omarchy plugin add https://github.com/guirossibrum/omarchy-touchbar.git --enable --yes
 ```
 
 Then apply the default layout (polkit or sudo prompt for `/etc/tiny-dfr`):

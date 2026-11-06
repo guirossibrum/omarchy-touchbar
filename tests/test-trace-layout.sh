@@ -19,11 +19,23 @@ subprocess.run(['python3', '-', *args], input=program, text=True, check=True)
 config = tomllib.loads((work/'config.toml').read_text())
 first = config['MediaLayerKeys'][0]
 assert first['Icon'] == 'omarchy-green' and first['Action'] == 'Search'
-assert len(first['Trace']['Paths']) == 1
-assert first['Trace']['Paths'][0][0] == first['Trace']['Paths'][0][-1]
-points = first['Trace']['Paths'][0]
-# The logo's rails are orthogonal: no diagonal bridges between disconnected paths.
-assert all((a[0] == b[0]) != (a[1] == b[1]) for a,b in zip(points, points[1:]))
+topology = json.loads((root/'assets/omarchy-topology.json').read_text())
+assert len(first['Trace']['Paths']) == len(topology['edges']) == 19
+assert len(topology['nodes']) == 18
+assert sum(node['degree'] == 3 for node in topology['nodes']) == 6
+positions = {node['id']:node['position'] for node in topology['nodes']}
+rails = {tuple(sorted((tuple(positions[e['from']]), tuple(positions[e['to']])))) for e in topology['edges']}
+assert rails == {tuple(sorted(map(tuple,path))) for path in first['Trace']['Paths']}
+assert all((a[0] == b[0]) != (a[1] == b[1]) for a,b in rails)
+routes = json.loads((root/'assets/omarchy-routes.json').read_text())
+assert len(routes) == 153
+assert sum(len(entry['routes']) for entry in routes) == 495
+for entry in routes:
+    for route in entry['routes']:
+        nodes = route['nodes']
+        assert len(nodes) == len(set(nodes))
+        assert nodes[0] == entry['from'] and nodes[-1] == entry['to']
+        assert all(tuple(sorted((tuple(positions[a]),tuple(positions[b])))) in rails for a,b in zip(nodes,nodes[1:]))
 assert config['AdaptiveBrightness'] is True
 assert 'o.rebind("PRINT"' in (work/'bindings.lua').read_text()
 assert [b['Action'] for b in config['PrimaryLayerKeys']] == ['F'+str(i) for i in range(1,13)]

@@ -12,8 +12,10 @@ action; Fn, other keys, and adaptive brightness retain their existing behavior.
 Omarchy's screensaver launches `ttfx`, maintained at `omacom/ttfx`. The companion
 tiny-dfr build links that project's public Rust library at revision
 `14ed2742596f0056b13e25d14a83ea851adc2294`. It uses `fx::effects::wipe::Wipe` with
-`InOutCirc` easing on a one-row virtual canvas, and its RNG for starting points.
-The adapter maps the resulting coverage to vector centerlines. No separate
+`Linear` easing on a one-row virtual canvas, and its RNG for starting points.
+The adapter maps the resulting linear coverage to weighted distances on a rail
+graph. Junctions split the wavefront; loops merge it. All routing is precomputed
+when the icon loads, and sources are strictly inside rails, clear of nodes. No separate
 effect algorithm or terminal rendering stack is maintained in this plugin.
 
 The engine creates the masks only when loading the icon; playback retains those
