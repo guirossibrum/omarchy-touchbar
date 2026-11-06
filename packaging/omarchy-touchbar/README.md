@@ -1,5 +1,7 @@
 # omarchy-touchbar package
 
+> Historical native-only packaging notes. The [main integration PR](https://github.com/omacom/omarchy/pull/17826) supersedes the source-build setup below with one prebuilt daemon/plugin package. Installation and updates never compile; recipes are for release builders only. See the [current README](https://github.com/guirossibrum/omarchy-touchbar#readme).
+
 An Arch package for the community tiny-dfr fork, built at a full pinned revision.
 It uses Omarchy's naming prefix and declares `provides=('tiny-dfr=0.3.8')` and
 `conflicts=('tiny-dfr')`: pacman replaces the stock daemon in one transaction.

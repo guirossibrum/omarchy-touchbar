@@ -1,5 +1,7 @@
 # Review scope
 
+> Historical native-only packaging notes. The [main integration PR](https://github.com/omacom/omarchy/pull/17826) supersedes the source-build setup below with one prebuilt daemon/plugin package. Installation and updates never compile; recipes are for release builders only. See the [current README](https://github.com/guirossibrum/omarchy-touchbar#readme).
+
 ## Problem and behavior
 
 The plugin configures a static Touch Bar and does not implement a renderer.

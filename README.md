@@ -27,34 +27,25 @@ Tested on an **M1 13-inch MacBook Pro / aarch64 Omarchy**. Setup supports only t
 
 Hardware detection prefers Omarchy's `omarchy-hw-touchbar`, then its existing `omarchy-hw-match-device-tree`, with a bounded, exact NUL-delimited `/proc/device-tree/compatible` fallback for older installations. All paths require aarch64. Root resolves helpers only from `/usr/bin` or `/bin`; helpers run in protected Bash without development fixture overrides. Detection uses the built-in hardware model rather than active DRM outputs, so closing the lid or temporarily powering down the Touch Bar does not disable setup. The packaged udev rules identify these models' Touch Bar inputs; this guard deliberately limits this integration to those Apple Silicon models.
 
-The proposed change to the main Omarchy `quattro` branch adds hardware detection and optional setup documentation. It does not install this community package by default or publish it into Omarchy's package repositories. This plugin and its native package remain separate dependencies; the manual setup below is still required.
+The [main Omarchy PR](https://github.com/omacom/omarchy/pull/17826) is being expanded to install this integration as **one prebuilt package**: native daemon plus a matching package-owned plugin. Installation and updates only download/unpack binaries and runtime files. They do not install Rust or invoke Cargo, makepkg, git clones, or a source-build fallback. Compilation belongs to the release/package build pipeline.
 
-Run `python3 tests/test-hardware.py`, `bash tests/test-bindings-io.sh`, `bash tests/test-font-sync.sh`, and `bash tests/test-trace-layout.sh` for local checks. Tests use explicit compatible-file fixtures through `tests/hardware-fixture.py`, which copies entrypoints into a temporary directory and replaces only their detector adapter with the real parser pointed at the fixture. Production entrypoints accept no fixture path or force-install switch, and fixture tests never select live Omarchy helpers or write real desktop configuration.
-
-Install build prerequisites if needed:
+Once that integration and its signed repository package are published, setup is:
 
 ```bash
-omarchy pkg add base-devel rust git pkgconf
+omarchy install touchbar
 ```
 
-Install this fork using the original plugin ID; replace the original plugin rather than enabling two copies:
+The same package upgrades the daemon and plugin together through normal Omarchy updates. An older user plugin is backed up rather than kept as a stale runtime copy. Fresh-system setup uses guarded system and user phases; only the supported Touch Bar models select them. Package publication remains a maintainer requirement before this can ship as part of main Omarchy.
 
-```bash
-omarchy plugin add https://github.com/guirossibrum/omarchy-touchbar.git --enable --yes
-cd ~/.config/omarchy/plugins/io.github.austindixson.touchbar
-./install-native.sh
-./enable-animation.sh
-```
+The legacy `install-native.sh` entry point delegates to the prebuilt installer. It never compiles or falls back to installing developer tools. The recipes in this repository describe the earlier native-only package; the combined package recipe and installation orchestration are reviewed in the main PR.
 
-`install-native.sh` builds the pinned Arch package as your user, then installs it through pacman. It provides/conflicts with `tiny-dfr`, so there is one daemon provider. It retains `tiny-dfr.service`, the udev rules and existing config interface. Build output stays in the user cache.
+Select a dictation backend under **Setup → Defaults → Dictation** before using hold-to-talk. Initial package/layout setup needs administrator authorization; subsequent font changes do not.
 
-`enable-animation.sh` backs up your layout, configures the first-position logo and hold action, and applies the layout. Initial package installation and layout application require authorization. Later font changes do not.
-
-The package declares its library dependencies; if makepkg reports missing dependencies, install those packages with `omarchy pkg add` and retry. Select a dictation backend under **Setup → Defaults → Dictation** before using hold-to-talk.
+Run the development checks below to test this source checkout without changing your desktop. These are contributor checks, not installation steps.
 
 ## Customize
 
-The user layout is `~/.config/omarchy/touchbar.json`. Edit it and run the plugin's `apply.sh` to apply button changes. Fonts follow automatically through Omarchy's `font-set` hook when `fontTemplate` is `"system"` (the default).
+The user layout is `~/.config/omarchy/touchbar.json`. Edit it and rerun `omarchy install touchbar` to apply button changes with the packaged integration. Fonts follow automatically through Omarchy's `font-set` hook when `fontTemplate` is `"system"` (the default).
 
 - `layout.json`: static logo and normal controls.
 - `layout-animated.json`: a complete animated example.
@@ -68,8 +59,8 @@ The daemon and desktop integration have separate responsibilities:
 
 | Component | Owns |
 | --- | --- |
-| [`omarchy-touchbar` package](packaging/omarchy-touchbar/README.md) | Native daemon, compatible executable/service, udev rules and shared assets |
-| This user plugin | Layout, Omarchy logo, menu/dictation bindings and font hooks |
+| [`omarchy-touchbar` combined package](https://github.com/guirossibrum/omarchy/tree/feature/omarchy-touchbar-package/packaging/omarchy-touchbar) | Native daemon, matching plugin files, compatible executable/service, udev rules and shared assets |
+| Matching packaged plugin | Layout, Omarchy logo, menu/dictation bindings and font hooks |
 
 The daemon source and Rust dependencies are pinned. The effect engine is reused as a library; no terminal, animation subprocess, or configuration-reload loop drives the animation. Font updates use an event-driven, bounded user-owned runtime channel after the daemon drops privileges.
 
@@ -78,14 +69,10 @@ The daemon source and Rust dependencies are pinned. The effect engine is reused 
 ## Roll back
 
 ```bash
-./install-native.sh --uninstall
+omarchy install touchbar --uninstall
 ```
 
-This restores stock `tiny-dfr` through pacman and removes the automatic-font hooks. The static logo/layout fallback remains usable. Plugin removal is separate:
-
-```bash
-omarchy plugin remove io.github.austindixson.touchbar
-```
+This restores stock `tiny-dfr` through pacman and removes managed plugin enablement, bindings and font hooks. Your saved layout and plugin backups are preserved.
 
 ## Development checks
 

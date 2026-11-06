@@ -1,5 +1,7 @@
 # Touch Bar for Omarchy
 
+> Historical native-only packaging notes. The [main integration PR](https://github.com/omacom/omarchy/pull/17826) supersedes the source-build setup below with one prebuilt daemon/plugin package. Installation and updates never compile; recipes are for release builders only. See the [current README](https://github.com/guirossibrum/omarchy-touchbar#readme).
+
 This community fork keeps Austin Dixson's plugin and adds a native animated
 Omarchy menu icon in the first position. Gray traces to green, then green back
 to gray, with a different starting point each pass. The key still opens the

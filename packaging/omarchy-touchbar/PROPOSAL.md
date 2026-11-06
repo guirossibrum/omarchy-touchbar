@@ -1,5 +1,7 @@
 # Proposed dependency: omarchy-touchbar
 
+> Historical native-only packaging notes. The [main integration PR](https://github.com/omacom/omarchy/pull/17826) supersedes the source-build setup below with one prebuilt daemon/plugin package. Installation and updates never compile; recipes are for release builders only. See the [current README](https://github.com/guirossibrum/omarchy-touchbar#readme).
+
 Apple Silicon Touch Bars need a native renderer as well as desktop integration. This proposal packages the community tiny-dfr fork as `omarchy-touchbar`, providing the existing `tiny-dfr` executable/service interface while adding generic vector animation, cancellable tap/hold actions, text alignment and event-driven desktop-font reloads.
 
 The Arch package declares `provides=('tiny-dfr=0.3.8')` and `conflicts=('tiny-dfr')`. Pacman installs one daemon provider at a time. The package owns its executable, original udev rules/assets, compatibility symlink and service; user layout stays under `/etc/tiny-dfr/config.toml`. The Omarchy plugin owns logo geometry, menu and dictation bindings, and font-change hooks.

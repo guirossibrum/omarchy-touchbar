@@ -20,6 +20,23 @@ spec.loader.exec_module(fixture)
 
 
 class HardwareTest(unittest.TestCase):
+    def test_prebuilt_wrapper_delegates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            plugin = work / 'plugin'
+            fixture.prepare(ROOT, plugin, b'apple,j293\0apple,t8103\0')
+            tools = work / 'bin'
+            tools.mkdir()
+            command = tools / 'omarchy-install-touchbar'
+            command.write_text('#!/bin/bash\nprintf "%s\\n" "$@"\nexit 17\n')
+            command.chmod(0o755)
+            env = dict(os.environ, PATH=str(tools) + ':/usr/bin:/bin')
+            for args in (['--package', '/offline/prebuilt.pkg.tar.xz'], ['--uninstall']):
+                result = subprocess.run(['/usr/bin/bash', str(plugin / 'install-native.sh'), *args],
+                                        env=env, capture_output=True, text=True, timeout=5)
+                self.assertEqual(result.returncode, 17, result.stderr)
+                self.assertEqual(result.stdout.splitlines(), args)
+
     def setUp(self):
         # Helper-selection tests are independent of the developer/CI host CPU.
         architecture = patch.object(hardware.os, 'uname')
