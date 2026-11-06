@@ -27,9 +27,11 @@ Tested on an **M1 13-inch MacBook Pro / aarch64 Omarchy**. Setup supports only t
 
 Hardware detection prefers Omarchy's `omarchy-hw-touchbar`, then its existing `omarchy-hw-match-device-tree`, with a bounded, exact NUL-delimited `/proc/device-tree/compatible` fallback for older installations. All paths require aarch64. Root resolves helpers only from `/usr/bin` or `/bin`; helpers run in protected Bash without development fixture overrides. Detection uses the built-in hardware model rather than active DRM outputs, so closing the lid or temporarily powering down the Touch Bar does not disable setup. The packaged udev rules identify these models' Touch Bar inputs; this guard deliberately limits this integration to those Apple Silicon models.
 
-The [package PR](https://github.com/omacom/omarchy-pkgs/pull/2216) supplies the canonical recipe to Omarchy's existing automated native ARM build/sign/publication pipeline. A [prebuilt review bundle with checksums and provenance](https://github.com/guirossibrum/omarchy-touchbar/releases/tag/review-0.3.8.omarchy1-2) is available for reviewers; it is unsigned and is not the official published package.
+The [package PR](https://github.com/omacom/omarchy-pkgs/pull/2216) supplies the canonical recipe to Omarchy's existing automated native ARM build/sign/publication pipeline. A [prebuilt review bundle with checksums and provenance](https://github.com/guirossibrum/omarchy-touchbar/releases/tag/review-0.3.8.omarchy1-3) is available for reviewers; it is unsigned and is not the official published package.
 
 The [main Omarchy PR](https://github.com/omacom/omarchy/pull/17826) integrates this experience as **one prebuilt package**: native daemon plus a matching package-owned plugin. Installation and updates only download/unpack binaries and runtime files. They do not install Rust or invoke Cargo, makepkg, git clones, or a source-build fallback. Compilation belongs to the release/package build pipeline.
+
+The current integration requires package release 3 or newer. It includes live discovery refresh, cleanup after package removal, preservation of edited hooks, and retirement of obsolete owned font rules.
 
 Once that integration and its signed repository package are published, setup is:
 
