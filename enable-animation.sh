@@ -2,6 +2,7 @@
 # Preserve the user's layout; customize only the Omarchy menu button.
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+/usr/bin/python3 "$ROOT/hardware.py" || exit 0
 python3 - "$ROOT" <<'PY'
 import datetime, json, pathlib, shutil, sys
 root = pathlib.Path(sys.argv[1])

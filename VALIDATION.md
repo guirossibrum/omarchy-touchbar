@@ -116,3 +116,9 @@ service restart, or system-font setting mutation. The system font itself was
 left unchanged; the test invoked only this plugin's hook, not other user hooks.
 `pacman -Qkk omarchy-touchbar` reports 50 files and zero altered files. The
 existing lid guard and daemon are active, and Hyprland reports no config errors.
+
+## Hardware isolation before the main Quattro proposal
+
+The companion hardware suite passes four test groups covering exact M1/M2 Touch Bar model matching, rejection of non-Touch-Bar Macs and missing/malformed device trees, helper precedence, protected root helper resolution, and unsupported setup entrypoints. Whole-tree snapshots, Python spawn auditing and Bash traces verify no layout/binding/font/cache changes or package/service/elevation operations on the unsupported path. The check also covers Python bytecode files. Existing bindings, font and trace suites and plugin validation pass after the guards were added.
+
+The main Quattro proposal's hardware test passes 16 assertions, with one locale test skipped because Turkish is not installed. Its command metadata check passes for 580 commands. It includes a regression for inherited Bash startup code at the model-helper boundary. These are fixture tests; physical M2 validation remains outstanding. The main contribution adds detection and integration documentation, not automatic installation or signed package publication. The compressed physical demo was recorded on the existing M1 setup and is not evidence of M2 testing.

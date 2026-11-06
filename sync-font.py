@@ -5,6 +5,11 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+sys.dont_write_bytecode = True
+from hardware import supported
+
+if not supported():
+    sys.exit(0)
 
 uid = os.getuid()
 directory = pathlib.Path(os.environ.get('OMARCHY_TOUCHBAR_FONT_DIR', f'/run/omarchy-touchbar-font-{uid}'))

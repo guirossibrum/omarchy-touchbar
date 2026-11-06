@@ -6,6 +6,8 @@ set -uo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
+python3 "$ROOT/tests/hardware-fixture.py" "$ROOT" "$WORK/plugin"
+ROOT="$WORK/plugin"
 
 MARK_B="-- io.github.austindixson.touchbar begin"
 MARK_E="-- io.github.austindixson.touchbar end"

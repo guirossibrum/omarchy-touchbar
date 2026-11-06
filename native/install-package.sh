@@ -1,6 +1,8 @@
 #!/bin/bash
 # One authorized package installation; no passwordless policy is installed.
 set -euo pipefail
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+/usr/bin/python3 "$ROOT/hardware.py" || exit 0
 if (( EUID != 0 || $# != 1 )) || [[ ! -f $1 ]]; then
   echo 'Usage (root): install-package.sh /absolute/package.pkg.tar.zst' >&2
   exit 1

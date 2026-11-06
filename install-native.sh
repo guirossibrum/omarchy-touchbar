@@ -20,6 +20,7 @@ if [[ ${1:-} == --uninstall ]]; then
   echo 'Restored stock tiny-dfr. The plugin uses its static icon fallback.'
   exit 0
 fi
+/usr/bin/python3 "$ROOT/hardware.py" || exit 0
 if (( $# != 0 || EUID == 0 )); then
   echo 'Usage as your normal user: install-native.sh [--uninstall]' >&2
   exit 1

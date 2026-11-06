@@ -3,6 +3,7 @@
 set -euo pipefail
 
 PLUGIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+/usr/bin/python3 "$PLUGIN_DIR/hardware.py" || exit 0
 USER_LAYOUT="${OMARCHY_TOUCHBAR_LAYOUT:-$HOME/.config/omarchy/touchbar.json}"
 STOCK_LAYOUT="$PLUGIN_DIR/layout.json"
 BINDINGS="${OMARCHY_TOUCHBAR_BINDINGS:-$HOME/.config/hypr/bindings.lua}"

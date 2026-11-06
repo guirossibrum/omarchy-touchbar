@@ -3,6 +3,8 @@ set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
+python3 "$ROOT/tests/hardware-fixture.py" "$ROOT" "$WORK/plugin"
+ROOT="$WORK/plugin"
 OMARCHY_TOUCHBAR_FONT_DIR="$WORK" bash "$ROOT/sync-font.sh" 'JetBrainsMono Nerd Font'
 [[ $(cat "$WORK/current-font") == 'JetBrainsMono Nerd Font' ]]
 [[ $(stat -c %a "$WORK/current-font") == 644 ]]
